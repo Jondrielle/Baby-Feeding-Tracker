@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker Image
-        run: docker build -t feedingTracker . 
+        run: docker build -t feedingtracker . 
 
       - name: Run Docker Image Container
-        run: docker run --rm feedingTracker pytest
+        run: docker run --rm feedingtracker pytest
