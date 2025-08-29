@@ -8,6 +8,9 @@ WORKDIR /app
 COPY backend /app/backend
 COPY requirements.txt .
 
+# Copy tests
+COPY backend_tests /app/backend_tests
+
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
