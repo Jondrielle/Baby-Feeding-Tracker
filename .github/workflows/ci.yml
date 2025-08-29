@@ -21,4 +21,4 @@ jobs:
         run: build docker -t feedingTracker . 
 
       - name: Run Docker Image Container
-        run: docker run --rm feedingTracker
+        run: docker run --rm feedingTracker pytest

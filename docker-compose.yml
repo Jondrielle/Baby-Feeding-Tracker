@@ -1,6 +1,4 @@
-verison: "3.9"
-
 services:
   test:
     build: .
-      command: ["pytest", "-s"]
+    command: ["pytest"]
