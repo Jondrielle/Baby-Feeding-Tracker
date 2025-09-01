@@ -1,0 +1,24 @@
+name: CI
+
+on: 
+  push:
+    branches: 
+      - "master"
+
+  pull_request:
+    branches:
+      - "master"
+
+jobs:
+  docker-test:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: docker build -t feedingtracker . 
+
+      - name: Run Docker Image Container
+        run: docker run --rm feedingtracker pytest
