@@ -1,28 +1,71 @@
 import pytest
 from backend.schemas import FeedEntry
 from pydantic import ValidationError
+from datetime import datetime,timedelta
 
-# Using pytest's parametrize decorator for multiple inputs
-@pytest.mark.parametrize("feedData, expected", [
+def test_valid_feed_entry():
     # valid feed entry 
-    ({"id": 2, "method": "food", "amount_oz": 5, "amount_ml": 0}, True),
+    feed = FeedEntry(id=2,method="food",amount_oz=5,amount_ml=0)
+    assert feed.id == 2
+    assert feed.method == "food"
+    assert isinstance(feed.time, datetime)
+    assert feed.amount_oz == 5
+    assert feed.amount_ml == 0
+
+def test_oz_and_ml_cant_both_be_more_than_zero():
     # oz and ml cant both be more than 0
-    ({"id": 1, "method": "breastfeeding", "amount_oz": 8, "amount_ml": 240, "notes": "Test note"}, False),
+    with pytest.raises(ValidationError) as exc_info:
+        feed = FeedEntry(id=1,method="breastfeeding",amount_oz=8,amount_ml=30,notes="Test note")
+    
+    # Check that the exception message contains the expected error
+    assert "Either amount_oz or amount_ml must be set, not both" in str(exc_info.value)
+
+def test_oz_and_ml_cant_both_be_zero():
     # oz and ml cant both be 0
-    ({"id": 5, "method": "food", "amount_oz": 0, "amount_ml": 0}, False),
-    # oz or ml cant be less than 0
-    ({"id": 5, "method": "food", "amount_oz": -100, "amount_ml": 0}, False),
+    with pytest.raises(ValidationError) as exc_info:
+        feed = FeedEntry(id=5,method="bottle",amount_oz=0,amount_ml=0)
+
+    # Check that the exception message contains the expected error 
+    assert "Either amount_oz or amount_ml must be set" in str(exc_info.value)
+
+
+def test_oz_and_ml_must_be_in_its_range():
     # oz range must be in the range of 
-    ({"id": 5, "method": "bottle", "amount_oz": 39, "amount_ml": 0}, False),
+    with pytest.raises(ValidationError) as exc_info:
+        feed = FeedEntry(id=5,method="bottle",amount_oz=39,amount_ml=0)
+
+    # Check that the exception message contains the expected error 
+    assert "Amount_oz cannot be more than 32 ounces for a day" in str(exc_info.value)
+
     # ml range must be in the range of 
-    ({"id": 5, "method": "breastfeeding", "amount_oz": 0, "amount_ml": 4990}, False),
-])
-def test_oz_or_ml(feedData, expected):
-    try:
-        feed_Entry = FeedEntry(**feedData)
-        assert expected == True
-    except ValidationError:
-        assert expected == False
+    with pytest.raises(ValidationError) as exc_info:
+        feed = FeedEntry(id=5,method="breastfeeding", amount_oz=0, amount_ml=4900)
+
+    # Check that the exception message contains the expected error 
+    assert "Amount_ml cannot be more than 950 ml for a day" in str(exc_info.value)
+
+
+def test_nonnegative_oz_or_ml_values():
+    # oz cant be less than 0
+    with pytest.raises(ValidationError) as exc_info:
+        feed = FeedEntry(id=5,method="food",amount_oz=-100,amount_ml=0)
+
+    # Check that the exception message contains the expected error 
+    assert "Amount_oz cannot be negative" in str(exc_info.value)
+
+    # ml cant be less than 0
+    with pytest.raises(ValidationError) as exc_info:
+        feed = FeedEntry(id=5,method="bottle",amount_oz=0,amount_ml=-20)
+
+    # Check that the exception message contains the expected error 
+    assert "Amount_ml cannot be negative" in str(exc_info.value)
+
+    # Test both negative values for amount_ml and amount_oz
+    with pytest.raises(ValidationError) as exc_info:
+        FeedEntry(id=5, method="food", amount_oz=-5, amount_ml=-20)
+
+    # Check that the exception message contains the expected error
+    assert "Amount_oz cannot be negative" in str(exc_info.value) or "Amount_ml cannot be negative" in str(exc_info.value)
 
 def test_sanitize_notes():
     # notes can not be any html text
@@ -37,4 +80,13 @@ def test_sanitize_notes():
     # If notes are None, it should stay None
     # Test case with correct plain text 
     feed3 = FeedEntry(id=12, method="food", amount_oz=0, amount_ml=1, notes=None)
-    assert feed3.notes == ""  
+    assert feed3.notes == "" 
+
+def test_time_not_in_future():
+    future_time = datetime.now() + timedelta(hours=1)
+    try:
+        feed = FeedEntry(id=20,method="breastfeeding",time=future_time,amount_oz=20,amount_ml=0,notes="Feed was took a minute")
+        assert False, "Expected ValidationError but none was raised"
+    except ValidationError as e:
+        # Check if the correct error message is in the exception
+        assert "Time cannot be in the future" in str(e)
