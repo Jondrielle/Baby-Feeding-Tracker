@@ -41,15 +41,16 @@ class FeedEntry(BaseModel):
 
         return values
 
-    @field_validator("time",mode = 'after')
+    @field_validator("time",mode = 'before')
     @classmethod
-    def time_can_not_be_in_future(cls,values):
-        time = values.get("time")
+    def time_can_not_be_in_future(cls,value):
+        # Ensure `time` is not None
+        if value is None:
+            raise ValueError("Time cannot be None")
 
-        if time and time > datetime.now():
-            raise ValueError("Time can not be in the future")
-
-        return values
+        if value > datetime.now():
+            raise ValueError("Time cannot be in the future")
+        return value
 
     @field_validator("notes",mode="before")
     @classmethod
