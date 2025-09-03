@@ -7,6 +7,8 @@ from datetime import datetime
 
 
 class Feeding(SQLModel, table=True):
+    __tablename__ = "feeds"
+
     id: int = Field(default=None, primary_key=True)
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)

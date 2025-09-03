@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel,field_validator,Field,model_validator
 from backend.enums import feedingMethod
-from datetime import datetime
+from datetime import datetime,timezone
 from typing import Optional
 import bleach
 
-class FeedEntry(BaseModel):
-    id: int 
+class FeedEntry(BaseModel): 
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
     amount_oz: Optional[int] = None
@@ -41,14 +40,14 @@ class FeedEntry(BaseModel):
 
         return values
 
-    @field_validator("time",mode = 'before')
+    @field_validator("time",mode = 'after')
     @classmethod
     def time_can_not_be_in_future(cls,value):
         # Ensure `time` is not None
         if value is None:
             raise ValueError("Time cannot be None")
 
-        if value > datetime.now():
+        if value > datetime.now(timezone.utc):
             raise ValueError("Time cannot be in the future")
         return value
 
@@ -62,3 +61,13 @@ class FeedEntry(BaseModel):
         clean_notes = bleach.clean(notes, tags=[], attributes={}, strip=True)
         clean_notes = clean_notes.replace("</script>", "")
         return clean_notes
+
+class FeedEntryID(BaseModel):
+    id: int
+
+    @field_validator("id")
+    @classmethod
+    def id_must_not_be_none(cls, v):
+        if v is None:
+            raise ValueError("ID can not be null")
+        return v
