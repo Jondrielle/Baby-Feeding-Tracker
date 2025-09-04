@@ -6,7 +6,7 @@ from backend.enums import feedingMethod
 from datetime import datetime 
 
 
-class Feeding(SQLModel, table=True):
+class FeedingDBModel(SQLModel, table=True):
     __tablename__ = "feeds"
 
     id: int = Field(default=None, primary_key=True)

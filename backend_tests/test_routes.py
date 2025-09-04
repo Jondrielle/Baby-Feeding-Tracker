@@ -9,7 +9,7 @@ def test_root_request():
 	assert response.status_code == 200
 	assert response.json() == {"message": "Hello Baby Feeding Application"};
 
-def test_post_feed_request():
+def test_create_feed_request():
 	response = client.post("/feeding")
 	pass
 
