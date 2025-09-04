@@ -80,4 +80,7 @@ cypress/screenshots/
 .vscode/
 *.swp
 
+#Alembic
+alembic.ini
+
 

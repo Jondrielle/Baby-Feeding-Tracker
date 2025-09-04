@@ -22,3 +22,11 @@ jobs:
 
       - name: Run Docker Image Container
         run: docker run --rm feedingtracker pytest
+
+      - name: Set Up Environment Variables from Secrets
+        run: |
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $GITHUB_ENV
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> $GITHUB_ENV
+          echo "POSTGRES_DATABASE=${{ secrets.POSTGRES_DB }}" >> $GITHUB_ENV
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> $GITHUB_ENV
