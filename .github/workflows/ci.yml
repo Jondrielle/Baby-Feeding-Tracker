@@ -24,6 +24,14 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
+      - name: Print environment variables
+        run: |
+          echo "POSTGRES_USER: $POSTGRES_USER"
+          echo "POSTGRES_PASSWORD: $POSTGRES_PASSWORD"
+          echo "POSTGRES_DB: $POSTGRES_DB"
+          echo "POSTGRES_HOST: $POSTGRES_HOST"
+          echo "POSTGRES_PORT: $POSTGRES_PORT"
+
       - name: Build Docker Image
         run: docker build -t feedingtracker . 
 
