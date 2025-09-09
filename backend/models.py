@@ -13,7 +13,6 @@ class FeedingDBModel(SQLModel, table=True):
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
     amount_oz: Optional[int] = None
-    amount_ml: Optional[int] = None
     notes: Optional[str] = None
 
 # feeding: primary key-id, datetime, feedingMethod(enum),notes, amount_oz,amount_ml

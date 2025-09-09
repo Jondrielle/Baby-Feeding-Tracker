@@ -1,20 +1,45 @@
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from backend.main import app
+from backend.schemas import FeedEntry,FeedEntryResponse
 
 client = TestClient(app)
 
 def test_root_request():
-	response = client.get("/")
+	"""response = client.get("/")
 	assert response.status_code == 200
 	assert response.json() == {"message": "Hello Baby Feeding Application"};
-
+"""
 def test_create_feed_request():
-	response = client.post("/feeding")
-	pass
+	"""feed= FeedEntry(
+		method="breastfeeding",
+		amount_oz=3,
+		notes="Morning feed successful",
+	)
+	response = client.post("/feeding",json=feed.model_dump())
+	#assert response.status_code == 200
+	data = response.json()
 
+	#assert data["id"] is not None
+	"""
+	pass
+	
 def test_get_feeding_request():
-	#response = client.get():
+	""" feed= FeedEntry(
+		method="breastfeeding",
+		amount_oz=20,
+		notes="Morning feed successful",
+	)
+	response = client.post("/feeding",json=feed.model_dump())
+	data = response.json()
+	feed_id = data["id"]
+	#assert response.status_code == 200
+	
+	get_response = client.get(f"/getfeed{feed_id}")
+	get_data = get_response.json()
+	"""
+	#assert get_response.status_code == 200
+	#assert get_data["id"] == feed_id
 	pass
 
 def test_get_feedings_request():

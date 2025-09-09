@@ -5,8 +5,13 @@ from sqlalchemy import create_engine
 from fastapi import Depends
 from sqlmodel import SQLModel,Session
 
-# Load environment variables from .env
-load_dotenv()
+# Determine environment
+env = os.getenv("ENV", "testing")  # default to production
+
+if env == "testing":
+    load_dotenv(".env.testing")
+else:
+    load_dotenv(".env.production")
 
 # Create database URL from environment
 DATABASE_URL = (

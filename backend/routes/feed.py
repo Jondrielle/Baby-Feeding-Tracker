@@ -14,7 +14,7 @@ async def root():
 
 # Create a feeding
 @router.post("/createfeed/", response_model=FeedEntryID)
-async def create_feed(feeding: FeedEntry, session: Session = Depends(get_session))-> FeedEntry:
+async def create_feed(feeding: FeedEntry, session: Session = Depends(get_session))-> FeedEntryID:
     # Create ORM instance from Pydantic input
     db_feed = FeedingDBModel(**feeding.dict())
     
@@ -89,7 +89,6 @@ async def update_feed(feedID: int, update_feed: FeedEntry, session: Session = De
     feed.method = update_feed.method
     feed.time = update_feed.time
     feed.amount_oz = update_feed.amount_oz
-    feed.amount_ml = update_feed.amount_ml
     feed.notes = update_feed.notes
 
     session.add(feed)
