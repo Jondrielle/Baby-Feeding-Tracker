@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from backend.schemas import FeedEntry, FeedEntryID
+from backend.schemas import FeedEntry, FeedEntryID,FeedEntryResponse
 from backend.database import get_session  
 from backend.models import FeedingDBModel
 from sqlmodel import Session,select,delete
@@ -13,17 +13,16 @@ async def root():
     return {"message": "Hello Baby Feeding Application"}
 
 # Create a feeding
-@router.post("/createfeed/", response_model=FeedEntryID)
+@router.post("/createfeed/", response_model=FeedEntryResponse)
 async def create_feed(feeding: FeedEntry, session: Session = Depends(get_session))-> FeedEntryID:
-    # Create ORM instance from Pydantic input
-    db_feed = FeedingDBModel(**feeding.dict())
+    db_feed = FeedingDBModel(**feeding.model_dump())
     
     session.add(db_feed)
     session.commit()
     session.refresh(db_feed)
 
     print({"message": "Feeding created"})
-    return FeedEntryID(id=db_feed.id)
+    return FeedEntryResponse.from_db(db_feed)
 
 # Get a feeding
 @router.get("/getfeed/{feedID}")

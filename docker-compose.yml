@@ -3,25 +3,23 @@ services:
     build: .
     depends_on:
       - db
-    environment:
-      ENV: testing
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
 
   test:
     build: .
     depends_on:
       - db
     env_file:
-      - .env.testing
+      - .env
     command: ["pytest"]
 
   db:
     image: postgres:15
-    environment:
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_pass
-      POSTGRES_DB: test_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
 
-volumes:
-  postgres_data:

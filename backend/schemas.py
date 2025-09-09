@@ -19,7 +19,7 @@ class FeedEntry(BaseModel):
         ml = self.amount_ml
 
         # Must not both be provided
-        if oz > 0 and ml > 0:
+        if (oz or 0) > 0 and (ml or 0) > 0:
             raise ValueError("Either amount_oz or amount_ml must be set, not both")
 
         # Must not both be zero or None
@@ -43,12 +43,20 @@ class FeedEntry(BaseModel):
 
         return self
 
+    @field_validator("amount_oz", mode="before")
+    @classmethod
+    def round_oz(cls, v):
+        return round(v, 2) if v is not None else None
+        
     @field_validator("time",mode = 'after')
     @classmethod
     def time_can_not_be_in_future(cls,value):
-        # Ensure `time` is not None
         if value is None:
             raise ValueError("Time cannot be None")
+
+        # If `value` is naive (no tzinfo), assume it's UTC
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
 
         if value > datetime.now(timezone.utc):
             raise ValueError("Time cannot be in the future")
@@ -78,8 +86,8 @@ class FeedEntryResponse(BaseModel):
     id: int 
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
-    amount_oz: Optional[int] = None
-    amount_ml: Optional[int] = None
+    amount_oz: Optional[float] = None
+    amount_ml: Optional[float] = None
     notes: Optional[str] = Field(None, max_length=200)
 
     @classmethod 
@@ -93,7 +101,8 @@ class FeedEntryResponse(BaseModel):
             notes=db_feed.notes
         )
 
-        @field_serializer("time")
-        def serialize_date(self, value: datetime) -> str:
-            return value.strftime("%m/%d/%Y %H:%M")
+    @field_serializer("time")
+    @classmethod
+    def serialize_date(cls, value: datetime) -> str:
+        return value.strftime("%m/%d/%Y %H:%M")
 

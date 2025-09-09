@@ -1,22 +1,14 @@
-from dotenv import load_dotenv
-import os
 from typing import Annotated
 from sqlalchemy import create_engine
 from fastapi import Depends
 from sqlmodel import SQLModel,Session
-
-# Determine environment
-env = os.getenv("ENV", "testing")  # default to production
-
-if env == "testing":
-    load_dotenv(".env.testing")
-else:
-    load_dotenv(".env.production")
+from backend.config import settings
 
 # Create database URL from environment
 DATABASE_URL = (
-    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
-    f"@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+    f"postgresql+psycopg2://{settings.POSTGRES_USER}:"
+    f"{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:"
+    f"{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 )
 
 # Create engine
