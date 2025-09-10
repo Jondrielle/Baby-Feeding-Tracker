@@ -1,3 +1,4 @@
+version: "3.9"
 services:
   app:
     build: .
@@ -7,8 +8,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
     volumes:
       - ./app:/app
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -23,8 +24,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
     command: ["pytest"]
 
   db:
@@ -35,3 +36,4 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
+
