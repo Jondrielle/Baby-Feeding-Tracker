@@ -16,19 +16,18 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Create .env file from secrets
-        run: |
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
-          echo "POSTGRES_HOST=db" >> .env
-          echo "POSTGRES_PORT=5432" >> .env
-
-      - name: Build and start services
+       - name: Build and start services
         run: docker compose up --build -d
 
       - name: Run tests
-        run: docker compose run --rm --env-file .env test
+        run: |
+          docker compose run --rm \
+            -e POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            -e POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            -e POSTGRES_HOST=db \
+            -e POSTGRES_PORT=5432 \
+            test
 
       - name: Tear down services
         run: docker compose down
