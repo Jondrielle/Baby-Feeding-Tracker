@@ -3,10 +3,12 @@ services:
     build: .
     depends_on:
       - db
-    # Only use env_file for local development
-    # Comment this out in CI
-    # env_file:
-    #   - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     volumes:
       - ./app:/app
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -17,16 +19,19 @@ services:
     build: .
     depends_on:
       - db
-    # Comment this out in CI
-    # env_file:
-    #   - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     command: ["pytest"]
 
   db:
     image: postgres:15
-    # Comment this out in CI
-    # env_file:
-    #   - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
-
