@@ -9,7 +9,6 @@ def test_valid_feed_entry():
     assert feed.method == "food"
     assert isinstance(feed.time, datetime)
     assert feed.amount_oz == 5
-    print(f"Feed oz amount should be 5 but it is: {feed.amount_oz}")
 
 def test_oz_and_ml_cant_both_be_more_than_zero():
     # oz and ml cant both be more than 0

@@ -9,8 +9,8 @@ import bleach
 class FeedEntry(BaseModel): 
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
-    amount_oz: Optional[int] = None
-    amount_ml: Optional[int] = None
+    amount_oz: Optional[float] = None
+    amount_ml: Optional[float] = None
     notes: Optional[str] = Field(None, max_length=200)
 
     @model_validator(mode="after")
@@ -83,7 +83,7 @@ class FeedEntryID(BaseModel):
             raise ValueError("ID can not be null")
         return v
 class FeedEntryResponse(BaseModel):
-    id: int 
+    id: float 
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
     amount_oz: Optional[float] = None
@@ -96,7 +96,7 @@ class FeedEntryResponse(BaseModel):
             id = db_feed.id,
             method= db_feed.method,
             time= db_feed.time,
-            amount_oz=db_feed.amount_oz,
+            amount_oz= (db_feed.amount_oz) if db_feed.amount_oz else None,
             amount_ml=oz_to_ml(db_feed.amount_oz) if db_feed.amount_oz else None,
             notes=db_feed.notes
         )

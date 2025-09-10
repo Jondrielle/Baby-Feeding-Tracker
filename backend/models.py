@@ -9,7 +9,7 @@ from datetime import datetime
 class FeedingDBModel(SQLModel, table=True):
     __tablename__ = "feeds"
 
-    id: int = Field(default=None, primary_key=True)
+    id: float = Field(default=None, primary_key=True)
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
     amount_oz: Optional[int] = None
