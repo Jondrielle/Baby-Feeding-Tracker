@@ -1,51 +1,62 @@
 from fastapi import FastAPI
-from pydantic import BaseModel,field_validator,Field,model_validator
+from pydantic import BaseModel,field_validator,Field,model_validator,field_serializer
 from backend.enums import feedingMethod
 from datetime import datetime,timezone
-from typing import Optional
+from typing import Optional, Self
+from backend.utils import ml_to_oz, oz_to_ml
 import bleach
 
 class FeedEntry(BaseModel): 
     method: feedingMethod 
     time: datetime = Field(default_factory = datetime.now)
-    amount_oz: Optional[int] = None
-    amount_ml: Optional[int] = None
+    amount_oz: Optional[float] = None
+    amount_ml: Optional[float] = None
     notes: Optional[str] = Field(None, max_length=200)
 
-
     @model_validator(mode="after")
-    @classmethod
-    def check_oz_and_ml(cls,values):
-        oz = values.amount_oz
-        ml = values.amount_ml
+    def check_and_normalize_amount(self)-> Self:
+        oz = self.amount_oz
+        ml = self.amount_ml
 
-        # Check if either oz or ml is set, and ensure no negative values
-        if oz is not None and oz < 0:
-            raise ValueError("Amount_oz cannot be negative")
-        if ml is not None and ml < 0:
-            raise ValueError("Amount_ml cannot be negative")
-
-        if oz > 32:
-            raise ValueError("Amount_oz cannot be more than 32 ounces for a day")
-        if ml > 950:
-            raise ValueError("Amount_ml cannot be more than 950 ml for a day")
-
-        # Ensure only one of oz or ml is non-zero
-        if oz > 0 and ml:
+        # Must not both be provided
+        if (oz or 0) > 0 and (ml or 0) > 0:
             raise ValueError("Either amount_oz or amount_ml must be set, not both")
 
-        # Ensure that at least one of oz or ml is set (not both 0)
-        if oz == 0 and ml == 0:
-            raise ValueError("Either amount_oz or amount_ml must be set")
+        # Must not both be zero or None
+        if (oz is None or oz == 0) and (ml is None or ml == 0):
+            raise ValueError("Amount_oz and amount_ml can't both be set to 0")
 
-        return values
+        amount = oz if oz else ml
+        if amount is None or amount <= 0:
+            raise ValueError("Feeding amount must be positive and provided in oz or ml")
 
+        # Limit checks
+        if oz is not None and oz > 32:
+            raise ValueError("Amount exceeds daily maximum (32 oz or 950 ml)")
+        if ml is not None and ml > 950:
+            raise ValueError("Amount exceeds daily maximum (32 oz or 950 ml)")
+
+        # Convert ml to oz if needed
+        if ml is not None and ml > 0:
+            self.amount_oz = ml_to_oz(ml)
+            self.amount_ml = None # Normalize: store only in oz
+
+        return self
+
+    @field_validator("amount_oz", mode="before")
+    @classmethod
+    def round_oz(cls, v):
+        return round(v, 2) if v is not None else None
+        
     @field_validator("time",mode = 'after')
     @classmethod
     def time_can_not_be_in_future(cls,value):
-        # Ensure `time` is not None
         if value is None:
             raise ValueError("Time cannot be None")
+
+        # If `value` is naive (no tzinfo), assume it's UTC
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
 
         if value > datetime.now(timezone.utc):
             raise ValueError("Time cannot be in the future")
@@ -71,3 +82,27 @@ class FeedEntryID(BaseModel):
         if v is None:
             raise ValueError("ID can not be null")
         return v
+class FeedEntryResponse(BaseModel):
+    id: float 
+    method: feedingMethod 
+    time: datetime = Field(default_factory = datetime.now)
+    amount_oz: Optional[float] = None
+    amount_ml: Optional[float] = None
+    notes: Optional[str] = Field(None, max_length=200)
+
+    @classmethod 
+    def from_db(cls, db_feed):
+        return cls(
+            id = db_feed.id,
+            method= db_feed.method,
+            time= db_feed.time,
+            amount_oz= (db_feed.amount_oz) if db_feed.amount_oz else None,
+            amount_ml=oz_to_ml(db_feed.amount_oz) if db_feed.amount_oz else None,
+            notes=db_feed.notes
+        )
+
+    @field_serializer("time")
+    @classmethod
+    def serialize_date(cls, value: datetime) -> str:
+        return value.strftime("%m/%d/%Y %H:%M")
+

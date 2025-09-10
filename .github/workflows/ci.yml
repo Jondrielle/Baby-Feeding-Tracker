@@ -5,39 +5,34 @@ on:
     branches: 
       - "master"
   pull_request:
-    branches:
+    branches: 
       - "master"
 
 jobs:
   docker-test:
-    runs-on: "ubuntu-latest"
-
-    env:  # Set environment variables for the entire job
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_HOST: db  # Hardcoded for Docker container communication
-      POSTGRES_PORT: 5432  # Non-sensitive, can be hardcoded
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # Avoid printing sensitive information like passwords
-      - name: Print non-sensitive environment variables
+      - name: Build and start services
         run: |
-          echo "POSTGRES_DB: $POSTGRES_DB"
-          echo "POSTGRES_HOST: $POSTGRES_HOST"
-          echo "POSTGRES_PORT: $POSTGRES_PORT"
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+          POSTGRES_HOST=db \
+          POSTGRES_PORT=5432 \
+          docker compose up --build -d
 
-      - name: Build Docker Image
-        run: docker build -t feedingtracker . 
-
-      - name: Run Docker Image Container with environment variables
+      - name: Run tests
         run: |
-          docker run --rm \
-            --env POSTGRES_USER=$POSTGRES_USER \
-            --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-            --env POSTGRES_HOST=$POSTGRES_HOST \
-            --env POSTGRES_DB=$POSTGRES_DB \
-            --env POSTGRES_PORT=$POSTGRES_PORT \
-            feedingtracker pytest
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+          POSTGRES_HOST=db \
+          POSTGRES_PORT=5432 \
+          docker compose run --rm test
+
+      - name: Tear down services
+        run: docker compose down --volumes --remove-orphans
