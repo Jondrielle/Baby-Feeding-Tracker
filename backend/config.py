@@ -10,8 +10,12 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
 
     model_config = ConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8"
+        # Uncomment line below when pushing to github 
+        env_file= None
+
+        # Uncomment lines below when using .env locally
+        ##env_file=".env",
+        ## env_file_encoding="utf-8"
     )
 
 settings = Settings()
