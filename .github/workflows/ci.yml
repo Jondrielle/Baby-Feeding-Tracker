@@ -35,4 +35,4 @@ jobs:
           docker compose run --rm test
 
       - name: Tear down services
-        run: docker compose down
+        run: docker compose down --volumes --remove-orphans
