@@ -5,39 +5,29 @@ on:
     branches: 
       - "master"
   pull_request:
-    branches:
+    branches: 
       - "master"
 
 jobs:
   docker-test:
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
 
-    env:  # Set environment variables for the entire job
+    env:
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_HOST: db  # Hardcoded for Docker container communication
-      POSTGRES_PORT: 5432  # Non-sensitive, can be hardcoded
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # Avoid printing sensitive information like passwords
-      - name: Print non-sensitive environment variables
-        run: |
-          echo "POSTGRES_DB: $POSTGRES_DB"
-          echo "POSTGRES_HOST: $POSTGRES_HOST"
-          echo "POSTGRES_PORT: $POSTGRES_PORT"
+      - name: Build and start services in detached mode
+        run: docker-compose up --build -d
 
-      - name: Build Docker Image
-        run: docker build -t feedingtracker . 
+      - name: Run tests in a temporary container
+        run: docker-compose run --rm test
 
-      - name: Run Docker Image Container with environment variables
-        run: |
-          docker run --rm \
-            --env POSTGRES_USER=$POSTGRES_USER \
-            --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-            --env POSTGRES_HOST=$POSTGRES_HOST \
-            --env POSTGRES_DB=$POSTGRES_DB \
-            --env POSTGRES_PORT=$POSTGRES_PORT \
-            feedingtracker pytest
+      - name: Tear down services
+        run: docker-compose down
