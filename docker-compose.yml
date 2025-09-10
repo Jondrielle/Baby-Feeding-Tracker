@@ -3,8 +3,10 @@ services:
     build: .
     depends_on:
       - db
-    env_file:
-      - .env
+    # Only use env_file for local development
+    # Comment this out in CI
+    # env_file:
+    #   - .env
     volumes:
       - ./app:/app
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -15,14 +17,16 @@ services:
     build: .
     depends_on:
       - db
-    env_file:
-      - .env
+    # Comment this out in CI
+    # env_file:
+    #   - .env
     command: ["pytest"]
 
   db:
     image: postgres:15
-    env_file:
-      - .env
+    # Comment this out in CI
+    # env_file:
+    #   - .env
     ports:
       - "5432:5432"
 
