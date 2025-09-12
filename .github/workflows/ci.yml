@@ -25,6 +25,9 @@ jobs:
           POSTGRES_PORT=5432 \
           docker compose up --build -d
 
+      - name: Build frontend
+        run: docker compose run --rm frontend npm run build
+        
       - name: Run tests
         run: |
           POSTGRES_USER=${{ secrets.POSTGRES_USER }} \

@@ -8,6 +8,9 @@ WORKDIR /app
 COPY backend /app/backend
 COPY requirements.txt .
 
+# Copy frontend 
+COPY frontend /app/frontend
+
 # Copy tests
 COPY backend_tests /app/backend_tests
 
