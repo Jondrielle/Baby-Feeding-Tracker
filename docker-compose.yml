@@ -28,7 +28,9 @@ services:
       - "5173:5173"
 
   test:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     depends_on:
       - db
     environment:
