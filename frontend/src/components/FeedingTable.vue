@@ -1,20 +1,11 @@
 <script setup>
 import {reactive} from 'vue'
+import { storeToRefs } from 'pinia'
+import {useFeedingsStore} from '@/stores/feedings'
 
-const tablefeeds = ref({
-	method: '',
-	amount: '',
-	time: '',
-	notes: ''
-})
-
-const addFeed = ()=>{
-	
-}
-
-const deleteFeed = ()=>{
-	
-}
+const feedStore = useFeedingsStore()
+const { feedings } = storeToRefs(feedStore)   // reactive state
+const { deleteFeed } = feedStore              // action
 
 </script>
 
@@ -31,12 +22,12 @@ const deleteFeed = ()=>{
 		    </tr>
 		</thead>
 		  <tbody class="px-4 py-2 text-left">
-		    <tr v-for="(feeding, i) in feedings" :key="i">
-		      <td>{{ feeding.method }}</td>
-		      <td>{{ feeding.amount }}</td>
-		      <td>{{ feeding.time }}</td>
-		      <td>{{ feeding.notes }}</td>
-		      <Button class="text-red-600 hover:text-red-700 active:scale-99">Delete</Button>
+		    <tr v-for="(feed, index) in feedings" :key="index">
+		      <td>{{feed.method}}</td>
+		      <td>{{feed.amount}}</td>
+		      <td>{{feed.time}}</td>
+		      <td>{{feed.notes}}</td>
+		      <Button class="text-red-600 hover:text-red-700 active:scale-99" @click="deleteFeed">Delete</Button>
 		    </tr>
 		  </tbody>
 		</table>
