@@ -1,14 +1,48 @@
-import {ref, reactive} from 'vue'
+import {ref, reactive,computed} from 'vue'
 import {defineStore} from 'pinia'
 
 export const useFeedingsStore = defineStore('feedings', () => {
+
   const feedings = ref([])
+  const filteredFeedings = ref([])
+  const filterType = ref('') //e.g. method, time, amount 
+  const filterValue = ref('') //e.g. 'food' '3oz'
+
   const feed = reactive({
       method: '',
       amount: '',
       time: '',
       notes: ''
   })
+
+  const filterFeedings = computed(() => {
+    if (!filterType.value || !filterValue.value){
+      // No filter applied, return all
+      return feedings.value
+    }
+  return feedings.value.filter(feed => {
+    switch (filterType.value) {
+      case 'method':
+        return feed.method === filterValue.value
+      case 'time':
+        return feed.time === filterValue.value
+      case 'amount':
+        return feed.amount === Number(filterValue.value)
+      default:
+        return true
+    }
+  })
+})
+
+  function setFilter(type, value) {
+    filterType.value = type
+    filterValue.value = value
+  }
+
+  function clearFilter() {
+    filterType.value = ''
+    filterValue.value = ''
+  }
 
   function addFeed(method,amount,time,notes) {
     console.log("Add Feed")
@@ -34,7 +68,9 @@ export const useFeedingsStore = defineStore('feedings', () => {
     console.log("Deleting Feed")
   }
 
-  return { feedings, feed, addFeed, deleteFeed,
-    editFeed, clearFeeds
-   }
+  return { feedings, filterType,
+    filterValue, filteredFeedings: filterFeedings, // map filteredFeedings to computed filterFeedings
+    feed, setFilter, clearFilter, addFeed,
+    deleteFeed, editFeed, clearFeeds
+  }
 })

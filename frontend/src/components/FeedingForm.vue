@@ -5,11 +5,14 @@ import { storeToRefs } from 'pinia'
 import { useFeedingsStore } from '@/stores/feedings'
 import SubmitButton from '@/components/SubmitButton.vue'
 import DropDown from '@/components/DropDown.vue'
+import {useUnitToggleStore} from '@/stores/unitToggle'
 
+const unitToggleStore = useUnitToggleStore()
 const feedStore = useFeedingsStore()
 const { feedings } = storeToRefs(feedStore)  // reactive state
 const { addFeed } = feedStore                // actions
 
+const selectedMethod = ref('')  // define reactive ref
 const required = true
 const feed = ref({
   method: '',
@@ -43,7 +46,14 @@ const addFeedData = ()=>{
       <div class="grid grid-cols-1 md:grid-cols-5 gap-3 py-3 px-4 bg-gray-50 rounded-lg shadow-sm w-full">
         <!-- Method -->
         <div class="font-serif font-semibold">
-          <DropDown name="Method" :required="true" v-model="feed.method" class="w-full" />
+          <DropDown
+            v-model="feed.method"
+            required = true
+            name="Method"
+            iconType="arrow"
+            displayMode="form"
+            class="w-full" 
+          />
         </div>
 
         <!-- Amount -->
@@ -52,7 +62,7 @@ const addFeedData = ()=>{
             required
             v-model="feed.amount"
             type="number"
-            placeholder="Amount"
+            :placeholder="'Amount (' + unitToggleStore.unitToggle + ')'"
             class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3"
           />
         </div>

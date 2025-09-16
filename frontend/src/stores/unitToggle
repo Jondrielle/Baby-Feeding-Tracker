@@ -1,0 +1,21 @@
+import {defineStore} from 'pinia'
+import {ref,reactive,computed} from 'vue'
+
+export const useUnitToggleStore = defineStore('unit', () => {
+
+const isOz = ref(true)
+const unitToggle = ref('oz')
+
+const convertedAmount = computed(() => {
+  return unit.value === 'oz'
+    ? (amount.value * 29.5735).toFixed(2)
+    : (amount.value / 29.5735).toFixed(2)
+})
+
+function setUnitToggle(name){
+	unitToggle.value = name
+}
+
+return{isOz,unitToggle,convertedAmount,setUnitToggle}
+
+})
