@@ -3,7 +3,7 @@ import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useFeedingsStore } from '@/stores/feedings'
 import { useUnitToggleStore } from '@/stores/unitToggle'
-import Dropdown from '@/components/Dropdown.vue'
+import DropDown from '@/components/DropDown.vue'
 
 
 const unitToggleStore = useUnitToggleStore()
