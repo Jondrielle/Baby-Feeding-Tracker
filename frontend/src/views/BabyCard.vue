@@ -4,7 +4,6 @@ import {ref,reactive} from 'vue'
 import FeedingForm from '@/components/FeedingForm.vue'
 import FeedingTable from '@/components/FeedingTable.vue'
 import UnitToggle from '@/components/UnitToggle.vue'
-import TestTable from '@/components/TestTable.vue'
 import Footer from '@/components/Footer.vue'
 
 </script>
@@ -32,10 +31,6 @@ import Footer from '@/components/Footer.vue'
     <!-- Feed Table -->
     <div class="w-full overflow-x-auto">
       <FeedingTable />
-    </div>
-
-    <div class="w-full overflow-x-auto">
-    <TestTable/>
     </div>
     
     </div>

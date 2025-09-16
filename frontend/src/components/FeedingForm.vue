@@ -48,7 +48,7 @@ const addFeedData = ()=>{
         <div class="font-serif font-semibold">
           <DropDown
             v-model="feed.method"
-            required = true
+            required
             name="Method"
             iconType="arrow"
             displayMode="form"

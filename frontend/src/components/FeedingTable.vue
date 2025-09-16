@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch,computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useFeedingsStore } from '@/stores/feedings'
 import { useUnitToggleStore } from '@/stores/unitToggle'
@@ -30,6 +30,25 @@ watch(filterMethod, (newVal) => {
   }
 })
 
+// Helper function to convert amount
+const convertAmount = (amount, unit) => {
+  const num = parseFloat(amount)
+  if (isNaN(num)) return 'N/A'
+
+  return unit === 'ml'
+    ? (num * 29.5735).toFixed(0) // oz to ml
+    : num.toFixed(1)             // keep oz
+}
+
+// ✅ Computed feedings with converted amount
+const displayedFeedings = computed(() =>
+  filteredFeedings.value.map(feed => ({
+    ...feed,
+    displayAmount: convertAmount(feed.amount, unitToggleStore.unitToggle)
+  }))
+)
+
+
 // Optional: used for other filter buttons like amount/time
 const filter = (type, value) => {
   setFilter(type, value)
@@ -46,7 +65,7 @@ const filter = (type, value) => {
           <!-- Method column header -->
           <th class="px-4 py-2 text-left text-gray-700 font-medium flex items-center space-x-2">
             <span>Method</span>
-            <Dropdown
+            <DropDown
               v-model="filterMethod"
               name="Filter"
               :options="filterOptions"
@@ -88,9 +107,9 @@ const filter = (type, value) => {
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        <tr v-for="(feed, index) in filteredFeedings" :key="index" class="hover:bg-gray-50">
+        <tr v-for="(feed, index) in displayedFeedings" :key="index" class="hover:bg-gray-50">
           <td class="px-4 py-2">{{ feed.method }}</td>
-          <td class="px-4 py-2">{{ feed.amount }}</td>
+          <td class="px-4 py-2">{{ feed.displayAmount }}</td>
           <td class="px-4 py-2">{{ feed.time }}</td>
           <td class="px-4 py-2">{{ feed.notes }}</td>
           <td class="px-4 py-2">
