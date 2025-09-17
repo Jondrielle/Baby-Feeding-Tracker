@@ -8,10 +8,30 @@ With Baby-Feeding-Tracker, you can:
 - **📊 View a history of feed events**  
 
 Keep your baby’s feeding routine organized and easy to monitor!
- 
 
+# 🛠 Tools & Technologies
 <details>
-  <summary>Project Layout</summary>
+ 
+## Frontend
+
+<p align="left"> <img src="https://img.shields.io/badge/Vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white" alt="Vue.js" height="30"/> <img src="https://img.shields.io/badge/Pinia-ED1C24?style=for-the-badge&logo=pinia&logoColor=white" alt="Pinia" height="30"/> <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" height="30"/> <img src="https://img.shields.io/badge/Flowbite-6366F1?style=for-the-badge&logoColor=white" alt="Flowbite" height="30"/> </p>
+
+## Backend
+
+<p align="left"> <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" height="30"/> <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" height="30"/> </p>
+
+## DevOps & Deployment
+
+<p align="left"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" height="30"/> <img src="https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Compose" height="30"/> <img src="https://img.shields.io/badge/Dockerfile-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Dockerfile" height="30"/> </p>
+
+## Version Control & CI/CD
+
+<p align="left"> <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git" height="30"/> <img src="https://img.shields.io/badge/Git_Bash-000000?style=for-the-badge&logo=gnu-bash&logoColor=white" alt="Git Bash" height="30"/> <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Workflows" height="30"/> </p>
+
+</details>
+
+# Project Layout
+<details>
     
   ``` 
     feedingTracker/
@@ -40,9 +60,10 @@ Keep your baby’s feeding routine organized and easy to monitor!
     │ ├── App.vue
     │ ├── main.js
     │ └── src/
-    │   ├── assets/
+    │   ├── assets/ # logo image located at 
     │   ├── components/
     │   ├── views/
+    │   ├── stores/ # pinia stores located
     │   └── router/
     │     └── index.js
     │
