@@ -1,5 +1,5 @@
 <script setup>
-import logo from "@/assets/MilkAndGigglesLogo.png"
+import logo from "@/assets/MilkandGigglesLogo.png"
 </script>
 
 <template>
