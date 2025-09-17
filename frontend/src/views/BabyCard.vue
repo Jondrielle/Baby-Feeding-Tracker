@@ -1,22 +1,43 @@
 <script setup>
 import {ref,reactive} from 'vue'
+
 import FeedingForm from '@/components/FeedingForm.vue'
 import FeedingTable from '@/components/FeedingTable.vue'
-
-const feedings = ref([])
-
-const addFeeding = (feed)=> {
-  feedings.value.push(feed)
-  console.log(feed)
-}
+import UnitToggle from '@/components/UnitToggle.vue'
+import Footer from '@/components/Footer.vue'
 
 </script>
 
 <template>
-  <div>
-    <header class="font-serif font-bold text-xl mb-4">Feeding Log</header>
-    <div class="flex flex-col items-center">
-      <FeedingForm @add-feeding="addFeeding" class="mb=30"/>
+ <div class="min-h-screen flex flex-col bg-gray-50">
+  <div class="flex flex-col mt-10 w-full max-w-4xl mx-auto p-6 rounded-lg shadow-md bg-white">
+    <!-- Header -->
+    <header class="font-serif font-bold text-2xl mb-6 w-full text-left">
+      Feeding Log
+    </header>
+
+    <!-- Feed Form -->
+    <div class="flex flex-col items-center gap-4 w-full">
+      <!-- Feeding Form -->
+      <div class="w-full">
+        <FeedingForm />
+    </div>
+
+    <!-- Conversion Option -->
+    <div class = "w-full text-right">
+      <UnitToggle class="px-15"/>
+    </div>
+
+    <!-- Feed Table -->
+    <div class="w-full overflow-x-auto">
+      <FeedingTable />
+    </div>
+    
     </div>
   </div>
+
+  <div class="mt-auto">
+    <Footer/>
+  </div>
+</div>
 </template>
