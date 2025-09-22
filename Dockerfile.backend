@@ -1,26 +1,22 @@
-# Include docker image
 FROM python:3.11-slim
 
-# Set directory 
+# Set working directory 
 WORKDIR /app
 
-# Copy only your backend code and requirements file
-COPY backend /app/backend
+# Copy backend code
+COPY backend ./backend
+
+# Ensures Python can find /app as a module
+ENV PYTHONPATH=/app
+
+# Copy requirements
 COPY requirements.txt .
-
-# Copy frontend 
-COPY frontend /app/frontend
-
-# Copy tests
-COPY backend_tests /app/backend_tests
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port FastAPI will run on
+# Expose FastAPI port
 EXPOSE 8000
 
-# Run the app
+# Start FastAPI
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-

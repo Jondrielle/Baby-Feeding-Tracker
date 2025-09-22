@@ -1,5 +1,6 @@
 <script setup>
 import {ref,reactive} from 'vue'
+import axios from 'axios';
 
 import FeedingForm from '@/components/FeedingForm.vue'
 import FeedingTable from '@/components/FeedingTable.vue'

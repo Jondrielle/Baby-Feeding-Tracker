@@ -1,6 +1,7 @@
 <script setup>
-import {ref, reactive} from 'vue'
+import {ref, reactive,onMounted} from 'vue'
 import { storeToRefs } from 'pinia'
+import axios from 'axios';
 
 import { useFeedingsStore } from '@/stores/feedings'
 import SubmitButton from '@/components/SubmitButton.vue'
@@ -23,13 +24,32 @@ const feed = ref({
 
 const labelName = ref('Add')
 
+
+// Fetch feeds on mount
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/getfeedings')
+    items.value = response.data
+  } catch (error) {
+    console.error('Error fetching feeds:', error)
+  }
+})
+
 const addFeedData = ()=>{
+  // Add feed to store
   addFeed(
     feed.value.method,
     feed.value.amount,
     feed.value.time,
-    feed.value.notes)
+    feed.value.notes
+  )
     
+
+  // Call backend endpoint to create feed
+
+  const response = axios.post('http://localhost:8000/createfeed/',feed.value);
+
+  // Reset feed to empty values
   feed.value = {
     method: '',
     amount: '',
