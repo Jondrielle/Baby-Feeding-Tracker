@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch,computed } from 'vue'
+import { ref, watch,computed,onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useFeedingsStore } from '@/stores/feedings'
 import { useUnitToggleStore } from '@/stores/unitToggle'
@@ -15,11 +15,20 @@ const {
   filterValue
 } = storeToRefs(feedStore)
 
-const { deleteFeed, setFilter } = feedStore // ✅ FIX: include setFilter
+const { deleteFeed, setFilter,fetchFeedings } = feedStore // ✅ FIX: include setFilter
 
 const filterMethod = ref('')
 
 const filterOptions = ['Clear', 'Breastfeeding', 'Bottle', 'Food']
+
+onMounted(async () => {
+  try {
+    await feedStore.fetchFeedings();
+  } catch (error) {
+    console.error("Failed to fetch data:", error);
+  }
+});
+
 
 // When dropdown changes, update the filter
 watch(filterMethod, (newVal) => {
@@ -33,6 +42,7 @@ watch(filterMethod, (newVal) => {
 // Helper function to convert amount
 const convertAmount = (amount, unit) => {
   const num = parseFloat(amount)
+  console.log(num)
   if (isNaN(num)) return 'N/A'
 
   return unit === 'ml'
@@ -40,14 +50,23 @@ const convertAmount = (amount, unit) => {
     : num.toFixed(1)             // keep oz
 }
 
-// ✅ Computed feedings with converted amount
 const displayedFeedings = computed(() =>
-  filteredFeedings.value.map(feed => ({
-    ...feed,
-    displayAmount: convertAmount(feed.amount, unitToggleStore.unitToggle)
-  }))
-)
+  filteredFeedings.value.map(feed => {
+    // Pick whichever value exists
+    const amount = feed.amount_oz ?? feed.amount_ml ?? 0
 
+    // Determine the unit of the amount
+    const baseUnit = feed.amount_oz != null ? 'oz' : 'ml'
+
+    // Use your helper to convert to the currently selected unit
+    const displayAmount = convertAmount(amount, unitToggleStore.unitToggle === 'oz' ? 'oz' : 'ml')
+
+    return {
+      ...feed,
+      displayAmount
+    }
+  })
+)
 
 // Optional: used for other filter buttons like amount/time
 const filter = (type, value) => {
@@ -107,7 +126,7 @@ const filter = (type, value) => {
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        <tr v-for="(feed, index) in displayedFeedings" :key="index" class="hover:bg-gray-50">
+        <tr v-for="feed in feedStore.feedings" :key="feed.id" class="hover:bg-gray-50">
           <td class="px-4 py-2">{{ feed.method }}</td>
           <td class="px-4 py-2">{{ feed.displayAmount }}</td>
           <td class="px-4 py-2">{{ feed.time }}</td>

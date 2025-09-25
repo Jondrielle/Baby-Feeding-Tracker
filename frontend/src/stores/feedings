@@ -1,20 +1,31 @@
 import {ref, reactive,computed} from 'vue'
 import {defineStore} from 'pinia'
+import axios from 'axios';
 
 export const useFeedingsStore = defineStore('feedings', () => {
 
   const feedings = ref([])
   const filteredFeedings = ref([])
-  const filterType = ref('') //e.g. method, time, amount 
+  const filterType = ref('') //e.g. method, time, amount_oz, amount_ml 
   const filterValue = ref('') //e.g. 'food' '3oz'
-
   const feed = reactive({
+      id: null,
       method: '',
-      amount: '',
+      amount_oz: null,
+      amount_ml: null,
       time: '',
       notes: ''
   })
 
+  async function fetchFeedings(){
+    try{
+      const response = await axios.get(`http://localhost:8000/getfeedings`)
+      feedings.value = response.data
+    }catch(error){
+      console.error("Failed to fetch feedings:", error)
+    }
+  }
+  
   const filterFeedings = computed(() => {
     if (!filterType.value || !filterValue.value){
       // No filter applied, return all
@@ -24,10 +35,12 @@ export const useFeedingsStore = defineStore('feedings', () => {
     switch (filterType.value) {
       case 'method':
         return feed.method === filterValue.value
+      case 'amount_oz':
+        return feed.amount_oz === Number(filterValue.value)
+      case 'amount_ml':
+        return feed.amount_ml === Number(filterValue.value)
       case 'time':
         return feed.time === filterValue.value
-      case 'amount':
-        return feed.amount === Number(filterValue.value)
       default:
         return true
     }
@@ -44,21 +57,37 @@ export const useFeedingsStore = defineStore('feedings', () => {
     filterValue.value = ''
   }
 
-  function addFeed(method,amount,time,notes) {
-    console.log("Add Feed")
-    // Push a new feed object into the array
-    feedings.value.push({
-      method,
-      amount,
-      time,
-      notes
-    })
+  async function addFeed(feedData) {
+    try {
+      const response = await axios.post('http://localhost:8000/createfeed/', feedData)
+
+      // Merge the backend-generated id into the feed object
+      const newFeed = { ...feedData, id: response.data.id }
+
+      // Add to reactive array so UI updates
+      feedings.value.push(newFeed)
+
+      console.log("Created Feed:", newFeed)
+    } catch (error) {
+      console.error('Failed to add feed:', error)
+    }
   }
 
-  function deleteFeed() {
-    console.log("Deleting Feed")
-    feedings.value.splice(0,1)
+  async function deleteFeed(selectFeed) {
+    try {
+      console.log(selectFeed)
+      console.log(selectFeed.id)
+      await axios.delete(`http://localhost:8000/deleteFeed/${selectFeed.id}`)
+
+      // Remove the matching feed from the frontend array
+      feedings.value = feedings.value.filter(f => f.id !== selectFeed.id)
+
+      console.log("Deleted Feed:")
+    } catch (error) {
+      console.error('Failed to delete feed:', error)
+    }
   }
+
 
   function editFeed() {
     console.log("Edited Feed")
@@ -69,7 +98,7 @@ export const useFeedingsStore = defineStore('feedings', () => {
   }
 
   return { feedings, filterType,
-    filterValue, filteredFeedings: filterFeedings, // map filteredFeedings to computed filterFeedings
+    filterValue, filteredFeedings: filterFeedings, // map filteredFeedings to computed filterFeedings,fetchFeedings,
     feed, setFilter, clearFilter, addFeed,
     deleteFeed, editFeed, clearFeeds
   }

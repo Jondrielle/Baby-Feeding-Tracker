@@ -21,7 +21,7 @@ const props = defineProps({
   },
   options: {
     type: Array,
-    default: () => ['Breastfeeding', 'Bottle', 'Food'], // default options
+    default: () => ['breastfeeding', 'bottle', 'food'], // default options
   },
 });
 

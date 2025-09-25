@@ -33,7 +33,7 @@ import Footer from '@/components/Footer.vue'
     <div class="w-full overflow-x-auto">
       <FeedingTable />
     </div>
-    
+
     </div>
   </div>
 
@@ -41,4 +41,5 @@ import Footer from '@/components/Footer.vue'
     <Footer/>
   </div>
 </div>
+
 </template>

@@ -15,44 +15,31 @@ const { addFeed } = feedStore                // actions
 
 const selectedMethod = ref('')  // define reactive ref
 const required = true
-const feed = ref({
+const amount = ref('')
+const formFeed = ref({
   method: '',
-  amount: '',
+  amount_oz: null,
+  amount_ml: null,
   time: '',
   notes: ''
 })
 
 const labelName = ref('Add')
 
-
-// Fetch feeds on mount
-onMounted(async () => {
-  try {
-    const response = await axios.get('http://localhost:8000/getfeedings')
-    items.value = response.data
-  } catch (error) {
-    console.error('Error fetching feeds:', error)
-  }
-})
-
 const addFeedData = ()=>{
+
+  formFeed.value.amount_oz = unitToggleStore.unitToggle === 'oz' ? Number(amount.value) : null
+
+  formFeed.value.amount_ml = unitToggleStore.unitToggle === 'ml' ? Number(amount.value) : null
+
   // Add feed to store
-  addFeed(
-    feed.value.method,
-    feed.value.amount,
-    feed.value.time,
-    feed.value.notes
-  )
-    
-
-  // Call backend endpoint to create feed
-
-  const response = axios.post('http://localhost:8000/createfeed/',feed.value);
+  addFeed(formFeed.value)
 
   // Reset feed to empty values
-  feed.value = {
+  formFeed.value = {
     method: '',
-    amount: '',
+    amount_oz: null,
+    amount_ml: null,
     time: '',
     notes: ''
   }
@@ -67,7 +54,7 @@ const addFeedData = ()=>{
         <!-- Method -->
         <div class="font-serif font-semibold">
           <DropDown
-            v-model="feed.method"
+            v-model="formFeed.method"
             required
             name="Method"
             iconType="arrow"
@@ -80,7 +67,7 @@ const addFeedData = ()=>{
         <div class="font-serif font-semibold">
           <input
             required
-            v-model="feed.amount"
+            v-model="amount"
             type="number"
             :placeholder="'Amount (' + unitToggleStore.unitToggle + ')'"
             class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3"
@@ -91,7 +78,7 @@ const addFeedData = ()=>{
         <div class="font-serif font-semibold">
           <input
             required
-            v-model="feed.time"
+            v-model="formFeed.time"
             type="datetime-local"
             placeholder="Time"
             class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3 text-gray-500"
@@ -101,7 +88,7 @@ const addFeedData = ()=>{
         <!-- Notes -->
         <div class="font-serif font-semibold">
           <input
-            v-model="feed.notes"
+            v-model="formFeed.notes"
             placeholder="Notes"
             class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3"
           />

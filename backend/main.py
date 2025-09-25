@@ -8,7 +8,9 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",
+    "http://frontend:5173",
     "http://localhost:8080",
+    "http://localhost:8000",
 ]
 
 app.add_middleware(
@@ -18,6 +20,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
 
 app.include_router(router)
 
