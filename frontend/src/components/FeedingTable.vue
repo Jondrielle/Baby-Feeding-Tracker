@@ -15,20 +15,15 @@ const {
   filterValue
 } = storeToRefs(feedStore)
 
-const { deleteFeed, setFilter,fetchFeedings } = feedStore // ✅ FIX: include setFilter
+const { deleteFeed,setFilter,fetchFeedings,clearFeeds} = feedStore // ✅ FIX: include setFilter
 
 const filterMethod = ref('')
 
 const filterOptions = ['Clear', 'Breastfeeding', 'Bottle', 'Food']
 
 onMounted(async () => {
-  try {
-    await feedStore.fetchFeedings();
-  } catch (error) {
-    console.error("Failed to fetch data:", error);
-  }
-});
-
+  await feedStore.fetchFeedings()
+})
 
 // When dropdown changes, update the filter
 watch(filterMethod, (newVal) => {
@@ -51,7 +46,7 @@ const convertAmount = (amount, unit) => {
 }
 
 const displayedFeedings = computed(() =>
-  filteredFeedings.value.map(feed => {
+  feedStore.feedings.map(feed => {
     // Pick whichever value exists
     const amount = feed.amount_oz ?? feed.amount_ml ?? 0
 
@@ -126,7 +121,7 @@ const filter = (type, value) => {
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        <tr v-for="feed in feedStore.feedings" :key="feed.id" class="hover:bg-gray-50">
+        <tr v-for="feed in displayedFeedings" :key="feed.id" class="hover:bg-gray-50">
           <td class="px-4 py-2">{{ feed.method }}</td>
           <td class="px-4 py-2">{{ feed.displayAmount }}</td>
           <td class="px-4 py-2">{{ feed.time }}</td>
@@ -142,5 +137,8 @@ const filter = (type, value) => {
         </tr>
       </tbody>
     </table>
+    <div class="mt-2 flex justify-start">
+      <button class="text-red-600 hover:underline hover:text-red-700 active:scale-95 transition-transform" @click="clearFeeds()">Clear</button>
+    </div>
   </div>
 </template>

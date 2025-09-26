@@ -43,6 +43,8 @@ const addFeedData = ()=>{
     time: '',
     notes: ''
   }
+
+  amount.value = null
 }
 
 </script>

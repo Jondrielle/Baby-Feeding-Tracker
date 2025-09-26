@@ -75,9 +75,7 @@ export const useFeedingsStore = defineStore('feedings', () => {
 
   async function deleteFeed(selectFeed) {
     try {
-      console.log(selectFeed)
-      console.log(selectFeed.id)
-      await axios.delete(`http://localhost:8000/deleteFeed/${selectFeed.id}`)
+      await axios.delete(`http://localhost:8000/deletefeed/${selectFeed.id}`)
 
       // Remove the matching feed from the frontend array
       feedings.value = feedings.value.filter(f => f.id !== selectFeed.id)
@@ -88,18 +86,25 @@ export const useFeedingsStore = defineStore('feedings', () => {
     }
   }
 
-
   function editFeed() {
     console.log("Edited Feed")
   }
   
-  function clearFeeds() {
-    console.log("Deleting Feed")
+  async function clearFeeds() {
+    try{
+      await axios.delete(`http://localhost:8000/deletefeedings`)
+      feedings.value = []
+      console.log("Deleted Feedings")
+    }catch(error){
+      console.error("Failed to delete feedings:", error)
+    }
+    
   }
 
   return { feedings, filterType,
-    filterValue, filteredFeedings: filterFeedings, // map filteredFeedings to computed filterFeedings,fetchFeedings,
-    feed, setFilter, clearFilter, addFeed,
+    filterValue, filteredFeedings: filterFeedings,
+    fetchFeedings,feed, setFilter, 
+    clearFilter, addFeed,
     deleteFeed, editFeed, clearFeeds
   }
 })
