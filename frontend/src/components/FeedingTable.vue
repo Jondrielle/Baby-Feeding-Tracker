@@ -5,6 +5,8 @@ import { useFeedingsStore } from '@/stores/feedings'
 import { useUnitToggleStore } from '@/stores/unitToggle'
 import DropDown from '@/components/DropDown.vue'
 import FeedingForm from '@/components/FeedingForm.vue' 
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/20/solid'
+
 
 
 
@@ -21,6 +23,9 @@ const { deleteFeed,setFilter,fetchFeedings,clearFeeds,editFeed} = feedStore
 
 const filterMethod = ref('')
 const editedFeed = ref(null)
+const sortBy = ref('')          // 'amount' or 'time'
+const sortDirection = ref('asc') // 'asc' or 'desc'
+
 
 const filterOptions = ['Clear', 'breastfeeding', 'bottle', 'food']
 
@@ -63,16 +68,40 @@ const saveFeed = async (updatedFeed) => {
   closeForm() // then close modal
 }
 
-const displayedFeedings = computed(() =>
-  filteredFeedings.value.map(feed => {
+const sortColumn = (column) => {
+  if (sortBy.value === column) {
+    // toggle ascending/descending
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortDirection.value = 'asc'
+  }
+}
+
+  const sortedFeedings = computed(() => {
+  let list = [...filteredFeedings.value]
+
+  if (sortBy.value === 'amount') {
+    list.sort((a, b) => {
+      const aVal = a.amount_oz ?? a.amount_ml ?? 0
+      const bVal = b.amount_oz ?? b.amount_ml ?? 0
+      return sortDirection.value === 'asc' ? aVal - bVal : bVal - aVal
+    })
+  } else if (sortBy.value === 'time') {
+    list.sort((a, b) => {
+      const aTime = new Date(a.time).getTime()
+      const bTime = new Date(b.time).getTime()
+      return sortDirection.value === 'asc' ? aTime - bTime : bTime - aTime
+    })
+  }
+
+  return list.map(feed => {
     const amount = feed.amount_oz ?? feed.amount_ml ?? 0
-    const displayAmount = convertAmount(
-      amount,
-      unitToggleStore.unitToggle === 'oz' ? 'oz' : 'ml'
-    )
+    const displayAmount = convertAmount(amount, unitToggleStore.unitToggle === 'oz' ? 'oz' : 'ml')
     return { ...feed, displayAmount }
   })
-)
+})
+
 
 // Optional: used for other filter buttons like amount/time
 const filter = (type, value) => {
@@ -101,29 +130,25 @@ const filter = (type, value) => {
             />
           </th>
 
-          <!-- Amount column header -->
-          <th class="px-4 py-2 text-left text-gray-700 font-medium">
-            Amount ({{ unitToggleStore.unitToggle }})
-            <button 
-              @click="filter('amount')" 
-              class="ml-2 p-1 text-gray-500 hover:text-gray-700" 
-              aria-label="Filter by amount"
-            >
-              <span class="material-symbols-outlined">filter_alt</span>
-            </button>
-          </th>
+          <!-- Amount column -->
+<th class="px-4 py-2 text-left text-gray-700 font-medium">
+  <button @click="sortColumn('amount')">
+    Amount ({{ unitToggleStore.unitToggle }})
+    <ChevronUpIcon v-if="sortBy === 'amount' && sortDirection === 'asc'" class="w-4 h-4 inline ml-1"/>
+    <ChevronDownIcon v-else-if="sortBy === 'amount' && sortDirection === 'desc'" class="w-4 h-4 inline ml-1"/>
+  </button>
+</th>
 
-          <!-- Time column header -->
-          <th class="px-4 py-2 text-left text-gray-700 font-medium">
-            Time
-            <button 
-              @click="filter('time')" 
-              class="ml-2 p-1 text-gray-500 hover:text-gray-700" 
-              aria-label="Filter by time"
-            >
-              <span class="material-symbols-outlined">filter_alt</span>
-            </button>
-          </th>
+<!-- Time column -->
+<th class="px-4 py-2 text-left text-gray-700 font-medium">
+  <button @click="sortColumn('time')">
+    Time
+    <ChevronUpIcon v-if="sortBy === 'time' && sortDirection === 'asc'" class="w-4 h-4 inline ml-1"/>
+    <ChevronDownIcon v-else-if="sortBy === 'time' && sortDirection === 'desc'" class="w-4 h-4 inline ml-1"/>
+  </button>
+</th>
+
+
           
           <!-- Notes column header -->
           <th class="px-4 py-2 text-left text-gray-700 font-medium">Notes</th>
@@ -133,7 +158,7 @@ const filter = (type, value) => {
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
-        <tr v-for="feed in displayedFeedings" :key="feed.id" class="hover:bg-gray-50">
+        <tr v-for="feed in sortedFeedings" :key="feed.id" class="hover:bg-gray-50">
           <td class="px-4 py-2">{{ feed.method }}</td>
           <td class="px-4 py-2">{{ feed.displayAmount }}</td>
           <td class="px-4 py-2">{{ feed.time }}</td>
