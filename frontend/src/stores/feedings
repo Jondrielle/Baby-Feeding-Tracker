@@ -21,8 +21,13 @@ export const useFeedingsStore = defineStore('feedings', () => {
     try{
       const response = await axios.get(`http://localhost:8000/getfeedings`)
       feedings.value = response.data
-    }catch(error){
-      console.error("Failed to fetch feedings:", error)
+    }catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.log("No feedings yet — setting empty list");
+        this.feedings = []; // so your table renders empty instead of breaking
+      } else {
+        console.error("Unexpected error fetching feedings:", error);
+      }
     }
   }
   
@@ -86,8 +91,22 @@ export const useFeedingsStore = defineStore('feedings', () => {
     }
   }
 
-  function editFeed() {
-    console.log("Edited Feed")
+  async function editFeed(feed) {
+    try {
+      const payload = {
+        method: feed.method,
+        time: feed.time,
+        amount_oz: feed.amount_oz,
+        amount_ml: feed.amount_ml,
+        notes: feed.notes
+      }
+      await axios.put(`http://localhost:8000/updatefeed/${feed.id}`, payload);
+      const index = feedings.value.findIndex(f => f.id === feed.id);
+      if (index !== -1) feedings.value[index] = { ...feed }
+      console.log("Feed updated:", feed.id)
+    } catch (error) {
+      console.error("Failed to edit feed:", error);
+    }
   }
   
   async function clearFeeds() {
@@ -97,8 +116,7 @@ export const useFeedingsStore = defineStore('feedings', () => {
       console.log("Deleted Feedings")
     }catch(error){
       console.error("Failed to delete feedings:", error)
-    }
-    
+    } 
   }
 
   return { feedings, filterType,

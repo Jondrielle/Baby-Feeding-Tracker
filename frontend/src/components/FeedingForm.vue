@@ -1,106 +1,120 @@
 <script setup>
-import {ref, reactive,onMounted} from 'vue'
-import { storeToRefs } from 'pinia'
-import axios from 'axios';
-
+import { ref, watch } from 'vue'
 import { useFeedingsStore } from '@/stores/feedings'
+import { useUnitToggleStore } from '@/stores/unitToggle'
 import SubmitButton from '@/components/SubmitButton.vue'
 import DropDown from '@/components/DropDown.vue'
-import {useUnitToggleStore} from '@/stores/unitToggle'
 
 const unitToggleStore = useUnitToggleStore()
 const feedStore = useFeedingsStore()
-const { feedings } = storeToRefs(feedStore)  // reactive state
-const { addFeed } = feedStore                // actions
+const { addFeed } = feedStore
 
-const selectedMethod = ref('')  // define reactive ref
-const required = true
-const amount = ref('')
-const formFeed = ref({
+const emit = defineEmits(['save', 'cancel'])
+
+const props = defineProps({
+  feed: Object // provided when editing
+})
+
+const isEditing = ref(!!props.feed)
+
+const form = ref({
+  id: null,
   method: '',
-  amount_oz: null,
-  amount_ml: null,
+  amount_oz: '',
+  amount_ml: '',
   time: '',
   notes: ''
 })
 
-const labelName = ref('Add')
+watch(
+  () => props.feed,
+  (newFeed) => {
+    if (newFeed) {
+      isEditing.value = true
+      // Only populate if form.id is null (first render)
+      if (!form.value.id) {
+        form.value = { ...newFeed }
+      }
+    } else {
+      isEditing.value = false
+      form.value = { id: null, method: '', amount_oz: '', amount_ml: '', time: '', notes: '' }
+    }
+  },
+  { immediate: true }
+)
 
-const addFeedData = ()=>{
 
-  formFeed.value.amount_oz = unitToggleStore.unitToggle === 'oz' ? Number(amount.value) : null
-
-  formFeed.value.amount_ml = unitToggleStore.unitToggle === 'ml' ? Number(amount.value) : null
-
-  // Add feed to store
-  addFeed(formFeed.value)
-
-  // Reset feed to empty values
-  formFeed.value = {
-    method: '',
-    amount_oz: null,
-    amount_ml: null,
-    time: '',
-    notes: ''
-  }
-
-  amount.value = null
+const cancelForm = () => {
+  emit('cancel')
 }
+
+const submitForm = () => {
+  if (isEditing.value) {
+    emit('save', form.value)  // parent closes modal
+  } else {
+    addFeed({
+      method: form.value.method,
+      amount_oz: unitToggleStore.unitToggle === 'oz' ? Number(form.value.amount_oz) : null,
+      amount_ml: unitToggleStore.unitToggle === 'ml' ? Number(form.value.amount_oz) : null,
+      time: form.value.time,
+      notes: form.value.notes
+    })
+    form.value = { id: null, method: '', amount_oz: '', amount_ml: '', time: '', notes: '' }
+  }
+}
+
 
 </script>
 
 <template>
-  <div class="w-full">
-    <form @submit.prevent="addFeedData">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 py-3 px-4 bg-gray-50 rounded-lg shadow-sm w-full">
-        <!-- Method -->
-        <div class="font-serif font-semibold">
-          <DropDown
-            v-model="formFeed.method"
-            required
-            name="Method"
-            iconType="arrow"
-            displayMode="form"
-            class="w-full" 
-          />
-        </div>
+  <form @submit.prevent="submitForm">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-3 py-3 px-4 bg-gray-50 rounded-lg shadow-sm w-full">
+      
+      <!-- Method -->
+      <DropDown 
+      v-model="form.method" required name="Method" iconType="arrow" displayMode="form" class="w-full" />
 
-        <!-- Amount -->
-        <div class="font-serif font-semibold">
-          <input
-            required
-            v-model="amount"
-            type="number"
-            :placeholder="'Amount (' + unitToggleStore.unitToggle + ')'"
-            class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3"
-          />
-        </div>
+      <!-- Amount -->
+      <input
+        required
+        v-model="form.amount_oz"
+        type="number"
+        :placeholder="'Amount (' + unitToggleStore.unitToggle + ')'"
+        class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3 font-serif font-semibold"
+      />
 
-        <!-- Time -->
-        <div class="font-serif font-semibold">
-          <input
-            required
-            v-model="formFeed.time"
-            type="datetime-local"
-            placeholder="Time"
-            class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3 text-gray-500"
-          />
-        </div>
+      <!-- Time -->
+      <input
+        required
+        v-model="form.time"
+        type="datetime-local"
+        class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3 font-serif font-semibold"
+      />
 
-        <!-- Notes -->
-        <div class="font-serif font-semibold">
-          <input
-            v-model="formFeed.notes"
-            placeholder="Notes"
-            class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3"
-          />
-        </div>
+      <!-- Notes -->
+      <input
+        v-model="form.notes"
+        placeholder="Notes"
+        class="w-full border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-10 px-3 font-serif font-semibold"
+      />
 
-        <!-- Submit Button -->
-        <div class="flex items-center">
-          <SubmitButton type="submit" :label="labelName" class="w-full" />
-        </div>
+      <!-- Buttons -->
+      <div>
+        <SubmitButton
+          type="submit"
+          :label="isEditing ? 'Save' : 'Add'"
+          class="w-full"
+        />
+        <button
+          v-if="isEditing"
+          type="button"
+          @click="cancelForm"
+          class="flex-1 border-2 border-gray-300 rounded-md h-10 px-3 font-serif font-semibold text-gray-700 hover:bg-gray-100"
+        >
+          Cancel
+        </button>
       </div>
-    </form>
-  </div>
+
+    </div>
+  </form>
 </template>

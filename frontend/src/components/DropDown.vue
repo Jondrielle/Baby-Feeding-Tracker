@@ -23,6 +23,10 @@ const props = defineProps({
     type: Array,
     default: () => ['breastfeeding', 'bottle', 'food'], // default options
   },
+  isModal: {
+    type: Boolean,
+    default: false // only true for modal dropdowns
+  },
 });
 
 

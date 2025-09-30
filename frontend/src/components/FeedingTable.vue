@@ -4,6 +4,8 @@ import { storeToRefs } from 'pinia'
 import { useFeedingsStore } from '@/stores/feedings'
 import { useUnitToggleStore } from '@/stores/unitToggle'
 import DropDown from '@/components/DropDown.vue'
+import FeedingForm from '@/components/FeedingForm.vue' 
+
 
 
 const unitToggleStore = useUnitToggleStore()
@@ -15,11 +17,12 @@ const {
   filterValue
 } = storeToRefs(feedStore)
 
-const { deleteFeed,setFilter,fetchFeedings,clearFeeds} = feedStore // ✅ FIX: include setFilter
+const { deleteFeed,setFilter,fetchFeedings,clearFeeds,editFeed} = feedStore 
 
 const filterMethod = ref('')
+const editedFeed = ref(null)
 
-const filterOptions = ['Clear', 'Breastfeeding', 'Bottle', 'Food']
+const filterOptions = ['Clear', 'breastfeeding', 'bottle', 'food']
 
 onMounted(async () => {
   await feedStore.fetchFeedings()
@@ -37,7 +40,6 @@ watch(filterMethod, (newVal) => {
 // Helper function to convert amount
 const convertAmount = (amount, unit) => {
   const num = parseFloat(amount)
-  console.log(num)
   if (isNaN(num)) return 'N/A'
 
   return unit === 'ml'
@@ -45,21 +47,30 @@ const convertAmount = (amount, unit) => {
     : num.toFixed(1)             // keep oz
 }
 
+// Helper function to edit feed data
+const editFeedData = (feed)=>{
+  editedFeed.value = {...feed}
+}
+
+// Clear feed form
+const closeForm = () => {
+  editedFeed.value = null
+}
+
+// Save edited feed
+const saveFeed = async (updatedFeed) => {
+  await feedStore.editFeed(updatedFeed) // update store
+  closeForm() // then close modal
+}
+
 const displayedFeedings = computed(() =>
-  feedStore.feedings.map(feed => {
-    // Pick whichever value exists
+  filteredFeedings.value.map(feed => {
     const amount = feed.amount_oz ?? feed.amount_ml ?? 0
-
-    // Determine the unit of the amount
-    const baseUnit = feed.amount_oz != null ? 'oz' : 'ml'
-
-    // Use your helper to convert to the currently selected unit
-    const displayAmount = convertAmount(amount, unitToggleStore.unitToggle === 'oz' ? 'oz' : 'ml')
-
-    return {
-      ...feed,
-      displayAmount
-    }
+    const displayAmount = convertAmount(
+      amount,
+      unitToggleStore.unitToggle === 'oz' ? 'oz' : 'ml'
+    )
+    return { ...feed, displayAmount }
   })
 )
 
@@ -85,7 +96,8 @@ const filter = (type, value) => {
               :options="filterOptions"
               iconType="filter"
               displayMode="filter"
-              class="w-40" 
+              class="w-40"
+              :isModal="false" 
             />
           </th>
 
@@ -128,6 +140,12 @@ const filter = (type, value) => {
           <td class="px-4 py-2">{{ feed.notes }}</td>
           <td class="px-4 py-2">
             <button
+              class="text-blue-600 hover:text-blue-700 active:scale-95 transition-transform"
+              @click="editFeedData(feed)"
+            >
+              Edit 
+            </button>
+            <button
               class="text-red-600 hover:text-red-700 active:scale-95 transition-transform"
               @click="deleteFeed(feed)"
             >
@@ -140,5 +158,13 @@ const filter = (type, value) => {
     <div class="mt-2 flex justify-start">
       <button class="text-red-600 hover:underline hover:text-red-700 active:scale-95 transition-transform" @click="clearFeeds()">Clear</button>
     </div>
+
+    <!-- Modal -->
+    <div v-if="editedFeed" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+        <FeedingForm :feed="editedFeed" @save="saveFeed" @cancel="closeForm"/>
+      </div>
+    </div>
+
   </div>
 </template>
