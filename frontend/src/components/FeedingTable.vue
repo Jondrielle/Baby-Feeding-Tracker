@@ -102,6 +102,12 @@ const sortColumn = (column) => {
   })
 })
 
+function onOverlayClick(event) {
+  // Ignore clicks on dropdowns inside the modal
+  if (!event.target.closest('.dropdown-ignore-overlay')) {
+    closeForm()
+  }
+}
 
 // Optional: used for other filter buttons like amount/time
 const filter = (type, value) => {
@@ -131,22 +137,22 @@ const filter = (type, value) => {
           </th>
 
           <!-- Amount column -->
-<th class="px-4 py-2 text-left text-gray-700 font-medium">
-  <button @click="sortColumn('amount')">
-    Amount ({{ unitToggleStore.unitToggle }})
-    <ChevronUpIcon v-if="sortBy === 'amount' && sortDirection === 'asc'" class="w-4 h-4 inline ml-1"/>
-    <ChevronDownIcon v-else-if="sortBy === 'amount' && sortDirection === 'desc'" class="w-4 h-4 inline ml-1"/>
-  </button>
-</th>
+          <th class="px-4 py-2 text-left text-gray-700 font-medium">
+            <button @click="sortColumn('amount')">
+              Amount ({{ unitToggleStore.unitToggle }})
+              <ChevronUpIcon v-if="sortBy === 'amount' && sortDirection === 'asc'" class="w-4 h-4 inline ml-1"/>
+              <ChevronDownIcon v-else-if="sortBy === 'amount' && sortDirection === 'desc'" class="w-4 h-4 inline ml-1"/>
+            </button>
+          </th>
 
-<!-- Time column -->
-<th class="px-4 py-2 text-left text-gray-700 font-medium">
-  <button @click="sortColumn('time')">
-    Time
-    <ChevronUpIcon v-if="sortBy === 'time' && sortDirection === 'asc'" class="w-4 h-4 inline ml-1"/>
-    <ChevronDownIcon v-else-if="sortBy === 'time' && sortDirection === 'desc'" class="w-4 h-4 inline ml-1"/>
-  </button>
-</th>
+          <!-- Time column -->
+          <th class="px-4 py-2 text-left text-gray-700 font-medium">
+            <button @click="sortColumn('time')">
+              Time
+              <ChevronUpIcon v-if="sortBy === 'time' && sortDirection === 'asc'" class="w-4 h-4 inline ml-1"/>
+              <ChevronDownIcon v-else-if="sortBy === 'time' && sortDirection === 'desc'" class="w-4 h-4 inline ml-1"/>
+            </button>
+          </th>
 
 
           
@@ -164,31 +170,38 @@ const filter = (type, value) => {
           <td class="px-4 py-2">{{ feed.time }}</td>
           <td class="px-4 py-2">{{ feed.notes }}</td>
           <td class="px-4 py-2">
+            <div class="flex gap-2">
             <button
-              class="text-blue-600 hover:text-blue-700 active:scale-95 transition-transform"
+              class="px-3 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 active:scale-95 transition-transform duration-150 font-medium text-sm"
               @click="editFeedData(feed)"
             >
               Edit 
             </button>
             <button
-              class="text-red-600 hover:text-red-700 active:scale-95 transition-transform"
+              class="px-3 py-1 text-red-600 border border-red-600 rounded hover:bg-red-50 active:scale-95 transition-transform duration-150 font-medium text-sm"
               @click="deleteFeed(feed)"
             >
               Delete
             </button>
+            </div>
           </td>
         </tr>
+
+        <!-- Inline edit row -->
+        <div
+          v-if="editedFeed"
+          class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          @click="closeForm"
+        >
+          <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg" @click.stop>
+            <FeedingForm :feed="editedFeed" :isEditing="true" @save="saveFeed" @cancel="closeForm"/>
+          </div>
+        </div>
+
       </tbody>
     </table>
     <div class="mt-2 flex justify-start">
       <button class="text-red-600 hover:underline hover:text-red-700 active:scale-95 transition-transform" @click="clearFeeds()">Clear</button>
-    </div>
-
-    <!-- Modal -->
-    <div v-if="editedFeed" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-        <FeedingForm :feed="editedFeed" @save="saveFeed" @cancel="closeForm"/>
-      </div>
     </div>
 
   </div>
