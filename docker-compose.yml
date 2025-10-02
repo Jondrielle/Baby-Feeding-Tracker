@@ -34,6 +34,9 @@ services:
       dockerfile: Dockerfile.backend
     depends_on:
       - db
+    volumes:
+      - ./:/app  # Mount the whole codebase, including tests
+    working_dir: /app
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
