@@ -21,14 +21,14 @@ const props = defineProps({
   },
   options: {
     type: Array,
-    default: () => ['Breastfeeding', 'Bottle', 'Food'], // default options
+    default: () => ['breastfeeding', 'bottle', 'food'], // default options
   },
 });
 
 
-const selectOption = (option) => {
-  if (option === 'Clear') {
-    emit('update:modelValue', '')  // Clear selection
+function selectOption(option) {
+    if (option === 'Clear') {
+    emit('update:modelValue', '')
   } else {
     emit('update:modelValue', option)
   }
@@ -37,8 +37,10 @@ const selectOption = (option) => {
 </script>
 
 <template>
-  <Menu as="div" class="relative inline-block w-56">
+  <Menu as="div" class="relative inline-block w-56 dropdown-ignore-overlay">
     <MenuButton
+      @click.prevent
+      @click.stop
       class="inline-flex w-full justify-between items-center rounded-md border-2 border-gray-300 px-4 py-2 font-semibold text-[#8e8e8e] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 h-10"
     >
       <!-- FORM MODE: show selected value or placeholder -->
@@ -67,11 +69,13 @@ const selectOption = (option) => {
       leave-from-class="transform scale-100"
       leave-to-class="transform opacity-0 scale-95"
     >
-      <MenuItems class="absolute z-10 mt-2 min-w-[14rem] rounded-md bg-gray-800 shadow-lg text-[#8e8e8e]">
+      <MenuItems class="absolute z-10 mt-2 min-w-[14rem] rounded-md bg-gray-800 shadow-lg text-[#8e8e8e]"
+      >
         <div class="py-1">
-          <MenuItem v-for="option in options" :key="option" v-slot="{ active }">
+          <MenuItem as="div" v-for="option in options" :key="option" v-slot="{ active, onSelect}">
             <button
               @click="selectOption(option)"
+              @keydown.enter.prevent="selectOption(option)"
               :class="[active ? 'bg-gray-700 text-white' : 'text-gray-300', 'block w-full text-left px-4 py-2 text-sm']"
             >
               {{ option }}

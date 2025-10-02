@@ -202,7 +202,7 @@ def test_patch_feeding_with_data_request():
     # Updated feed
     update_feed = FeedEntry(method="bottle",amount_oz=10,notes="success") 
 
-    update_response = client.put(f"/updatefeedings/{feed_id}",json=jsonable_encoder(update_feed))
+    update_response = client.put(f"/updatefeed/{feed_id}",json=jsonable_encoder(update_feed))
     update_data = update_response.json()
 
     assert update_response.status_code == 200
@@ -219,7 +219,7 @@ def test_patch_feeding_with_data_request():
 
 def test_patch_feeding_without_data_request():
     feed = FeedEntry(method="food",amount_oz=10,notes="success") 
-    response = client.put(f"/updatefeedings/{23}",json=jsonable_encoder(feed))
+    response = client.put(f"/updatefeed/{23}",json=jsonable_encoder(feed))
     data = response.json()
 
     assert response.status_code == 404

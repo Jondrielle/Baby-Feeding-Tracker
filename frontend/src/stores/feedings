@@ -1,20 +1,36 @@
 import {ref, reactive,computed} from 'vue'
 import {defineStore} from 'pinia'
+import axios from 'axios';
 
 export const useFeedingsStore = defineStore('feedings', () => {
 
   const feedings = ref([])
   const filteredFeedings = ref([])
-  const filterType = ref('') //e.g. method, time, amount 
+  const filterType = ref('') //e.g. method, time, amount_oz, amount_ml 
   const filterValue = ref('') //e.g. 'food' '3oz'
-
   const feed = reactive({
+      id: null,
       method: '',
-      amount: '',
+      amount_oz: null,
+      amount_ml: null,
       time: '',
       notes: ''
   })
 
+  async function fetchFeedings(){
+    try{
+      const response = await axios.get(`http://localhost:8000/getfeedings`)
+      feedings.value = response.data
+    }catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.log("No feedings yet — setting empty list");
+        this.feedings = []; // so your table renders empty instead of breaking
+      } else {
+        console.error("Unexpected error fetching feedings:", error);
+      }
+    }
+  }
+  
   const filterFeedings = computed(() => {
     if (!filterType.value || !filterValue.value){
       // No filter applied, return all
@@ -24,10 +40,12 @@ export const useFeedingsStore = defineStore('feedings', () => {
     switch (filterType.value) {
       case 'method':
         return feed.method === filterValue.value
+      case 'amount_oz':
+        return feed.amount_oz === Number(filterValue.value)
+      case 'amount_ml':
+        return feed.amount_ml === Number(filterValue.value)
       case 'time':
         return feed.time === filterValue.value
-      case 'amount':
-        return feed.amount === Number(filterValue.value)
       default:
         return true
     }
@@ -44,33 +62,67 @@ export const useFeedingsStore = defineStore('feedings', () => {
     filterValue.value = ''
   }
 
-  function addFeed(method,amount,time,notes) {
-    console.log("Add Feed")
-    // Push a new feed object into the array
-    feedings.value.push({
-      method,
-      amount,
-      time,
-      notes
-    })
+  async function addFeed(feedData) {
+    try {
+      const response = await axios.post('http://localhost:8000/createfeed/', feedData)
+
+      // Merge the backend-generated id into the feed object
+      const newFeed = { ...feedData, id: response.data.id }
+
+      // Add to reactive array so UI updates
+      feedings.value.push(newFeed)
+
+      console.log("Created Feed:", newFeed)
+    } catch (error) {
+      console.error('Failed to add feed:', error)
+    }
   }
 
-  function deleteFeed() {
-    console.log("Deleting Feed")
-    feedings.value.splice(0,1)
+  async function deleteFeed(selectFeed) {
+    try {
+      await axios.delete(`http://localhost:8000/deletefeed/${selectFeed.id}`)
+
+      // Remove the matching feed from the frontend array
+      feedings.value = feedings.value.filter(f => f.id !== selectFeed.id)
+
+      console.log("Deleted Feed:")
+    } catch (error) {
+      console.error('Failed to delete feed:', error)
+    }
   }
 
-  function editFeed() {
-    console.log("Edited Feed")
+  async function editFeed(feed) {
+    try {
+      const payload = {
+        method: feed.method,
+        time: feed.time,
+        amount_oz: feed.amount_oz,
+        amount_ml: feed.amount_ml,
+        notes: feed.notes
+      }
+      await axios.put(`http://localhost:8000/updatefeed/${feed.id}`, payload);
+      const index = feedings.value.findIndex(f => f.id === feed.id);
+      if (index !== -1) feedings.value[index] = { ...feed }
+      console.log("Feed updated:", feed.id)
+    } catch (error) {
+      console.error("Failed to edit feed:", error);
+    }
   }
   
-  function clearFeeds() {
-    console.log("Deleting Feed")
+  async function clearFeeds() {
+    try{
+      await axios.delete(`http://localhost:8000/deletefeedings`)
+      feedings.value = []
+      console.log("Deleted Feedings")
+    }catch(error){
+      console.error("Failed to delete feedings:", error)
+    } 
   }
 
   return { feedings, filterType,
-    filterValue, filteredFeedings: filterFeedings, // map filteredFeedings to computed filterFeedings
-    feed, setFilter, clearFilter, addFeed,
+    filterValue, filteredFeedings: filterFeedings,
+    fetchFeedings,feed, setFilter, 
+    clearFilter, addFeed,
     deleteFeed, editFeed, clearFeeds
   }
 })

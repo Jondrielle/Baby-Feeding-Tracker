@@ -100,7 +100,7 @@ async def delete_feedings(session: Session = Depends(get_session)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 # Update feeding
-@router.put("/updatefeedings/{feedID}")
+@router.put("/updatefeed/{feedID}")
 async def update_feed(feedID: int, update_feed: FeedEntry, session: Session = Depends(get_session)):
     feed = session.get(FeedingDBModel,feedID)
 
