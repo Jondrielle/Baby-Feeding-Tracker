@@ -10,10 +10,10 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
 
     model_config = ConfigDict(
-        #env_file=None
+        env_file=None
         # Uncomment below if you want to use local .env
-         env_file=".env",
-         env_file_encoding="utf-8"
+        # env_file=".env",
+        # env_file_encoding="utf-8"
     )
 
 settings = Settings()
